@@ -9,7 +9,10 @@ resource "google_compute_subnetwork" "vof-private-subnetwork" {
   ip_cidr_range = "${var.ip_cidr_range}"
 }
 
-resource "google_compute_target_pool" "default" {
-  name = "target-pool"
+resource "google_compute_target_pool" "vof-target-pool" {
+  name = "${var.env_name}-target-pool"
   session_affinity = "CLIENT_IP_PROTO"
+  health_checks = [
+    "${google_compute_http_health_check.vof-app-healthcheck.name}",
+  ]
 }
