@@ -28,6 +28,7 @@ The code in this repository aim to bring these benefits to the VOF application. 
 - [Logging](docs/logging.md)
 - [DNS](docs/dns.md)
 - [Maintenance](docs/maintenance.md)
+- [Initial GCP Setup](docs/setup.md)
 
 ### Contributors
 
@@ -37,3 +38,6 @@ The code in this repository aim to bring these benefits to the VOF application. 
 - [Businge Scott](https://github.com/scott45)
 - [Nana Elizabeth](https://github.com/natalie-elizabeth)
 - [Aoka Victoria](https://github.com/victoriaaoka)
+- [Robert Njane](https://github.com/rnjane)
+- [James Lemaiyan](https://github.com/lemmah)
+- [Winston Kamau](https://github.com/winstonkamau)
