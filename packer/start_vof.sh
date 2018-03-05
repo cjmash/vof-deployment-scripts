@@ -15,7 +15,7 @@ export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/ho
 export RAILS_ENV="$(get_var "railsEnv")"
 
 export DEPLOY_ENV="$(get_var "railsEnv")"
-if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
+if [[ "$(get_var "railsEnv")" == "develop-old" ]]; then
  export DEPLOY_ENV="staging"
 fi
 
@@ -43,7 +43,7 @@ production:
   secret_key_base: "$(openssl rand -hex 64)"
 staging:
   secret_key_base: "$(openssl rand -hex 64)"
-design-v2:
+develop-old:
   secret_key_base: "$(openssl rand -hex 64)"
 development:
   secret_key_base: "$(openssl rand -hex 64)"
@@ -79,7 +79,7 @@ authenticate_service_account() {
 }
 
 get_database_dump_file() {
-  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "design-v2" ]]; then
+  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "develop-old" ]]; then
     if gsutil cp gs://${BUCKET_NAME}/database-backups/vof_${RAILS_ENV}.sql /home/vof/vof_${RAILS_ENV}.sql; then
       echo "Database dump file created succesfully"
     fi
@@ -91,7 +91,7 @@ start_app() {
 
   sudo -u vof bash -c "mkdir -p /home/vof/app/log"
 
-  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "design-v2" ]]; then
+  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "develop-old" ]]; then
     # One time actions
     # Check if the database was already imported
     if export PGPASSWORD=$(get_var "databasePassword"); psql -h $(get_var "databaseHost") -p 5432 -U $(get_var "databaseUser") -d $(get_var "databaseName") -c 'SELECT key FROM ar_internal_metadata' 2>/dev/null | grep environment >/dev/null; then
@@ -144,7 +144,7 @@ EOF
   read_from_head true
   tag vof_production_logs
 </source>
-EOF 
+EOF
 
   sudo cat <<EOF > /etc/google-fluentd/config.d/vof_production_test_logs.conf
 <source>
@@ -168,14 +168,14 @@ EOF
 </source>
 EOF
 
-  sudo cat <<EOF > /etc/google-fluentd/config.d/vof_design-v2_logs.conf
+  sudo cat <<EOF > /etc/google-fluentd/config.d/vof_develop-old_logs.conf
 <source>
   @type tail
   format none
-  path /home/vof/app/log/design-v2.log
+  path /home/vof/app/log/develop-old.log
   pos_file /var/lib/google-fluentd/pos/vof.pos
   read_from_head true
-  tag vof_design-v2_logs
+  tag vof_develop-old_logs
 </source>
 EOF
 
@@ -187,7 +187,7 @@ configure_log_reader_positioning(){
   sudo cat <<EOF > /var/lib/google-fluentd/pos/vof.pos
 /home/vof/app/log/production.log   000000000000000  000000000000000
 /home/vof/app/log/staging.log   000000000000000  000000000000000
-/home/vof/app/log/design-v2.log   000000000000000  000000000000000
+/home/vof/app/log/develop-old.log   000000000000000  000000000000000
 /home/vof/app/log/production_test.log  000000000000000  000000000000000
 /home/vof/app/log/development.log  000000000000000  000000000000000
 /home/vof/app/log/sandbox.log  000000000000000  000000000000000
@@ -244,7 +244,7 @@ EOF
 
 }
 
-# Reason: When the logs are successfully rotated, the newly setup log files can't be written by the current rails app 
+# Reason: When the logs are successfully rotated, the newly setup log files can't be written by the current rails app
 # instance so supervisord is reload through this cron so that the app starts writing the log to the new log file.
 create_supervisord_cronjob() {
   cat > supervisord_cron <<'EOF'
