@@ -84,7 +84,11 @@ get_database_dump_file() {
     fi
   fi
 }
-
+start_bugsnag(){
+  pushd /home/vof/app
+    rails generate bugsnag 45a9de58b3e3ede429a9fe5f960c6ca3
+  popd
+}
 start_app() {
   local app_root="/home/vof/app"
 
@@ -254,7 +258,7 @@ main() {
 
   authenticate_service_account
   get_database_dump_file
-
+  start_bugsnag
   start_app
   configure_google_fluentd_logging
   configure_log_reader_positioning
