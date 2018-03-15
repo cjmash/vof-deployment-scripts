@@ -179,7 +179,11 @@ configure_log_reader_positioning(){
 /home/vof/app/log/sandbox.log  000000000000000  000000000000000
 EOF
 }
-
+start_bugsnag(){
+pushd /home/vof/app
+rails generate bugsnag a87c40387545acb74409037660a540aa
+popd
+}
 # this right here restarts the google fluentd service so that the above changes can take effect.
 restart_google_fuentd(){
   sudo service google-fluentd restart
