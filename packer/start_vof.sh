@@ -14,7 +14,7 @@ export PORT="${PORT:-8080}"
 export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/home/vof/andela_certificate.crt"
 export RAILS_ENV="$(get_var "railsEnv")"
 export REDIS_IP=$(get_var "redisIp")
-export BUGSNAG_KEY: "$(get_var "bugsnagKey")"
+export BUGSNAG_KEY="$(get_var "bugsnagKey")"
 export DEPLOY_ENV="$(get_var "railsEnv")"
 if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
  export DEPLOY_ENV="staging"
