@@ -14,6 +14,7 @@ export PORT="${PORT:-8080}"
 export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/home/vof/andela_certificate.crt"
 export RAILS_ENV="$(get_var "railsEnv")"
 export REDIS_IP=$(get_var "redisIp")
+export BUGSNAG_KEY: "$(get_var "bugsnagKey")"
 export DEPLOY_ENV="$(get_var "railsEnv")"
 if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
  export DEPLOY_ENV="staging"
@@ -182,7 +183,7 @@ EOF
 }
 start_bugsnag(){
 pushd /home/vof/app
-rails generate bugsnag ${BUGSNAG_KEY}
+rails generate bugsnag ${BUGSNAG_KEY} -f
 popd
 }
 # this right here restarts the google fluentd service so that the above changes can take effect.
@@ -259,7 +260,7 @@ main() {
 
   authenticate_service_account
   get_database_dump_file
-
+  start_bugsnag
   start_app
   configure_google_fluentd_logging
   configure_log_reader_positioning
