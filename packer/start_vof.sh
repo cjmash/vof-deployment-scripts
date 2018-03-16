@@ -29,6 +29,7 @@ update_application_yml() {
   cat <<EOF >> /home/vof/app/config/application.yml
 ACTION_CABLE_URL: '$(get_var "cableURL")'
 REDIS_URL: 'redis://${REDIS_IP}'
+BUGSNAG_KEY: '$(get_var "bugsnagKey")' 
 API_URL: 'https://api-staging.andela.com/'
 LOGIN_URL: 'https://api-staging.andela.com/login?redirect_url='
 LOGOUT_URL: 'https://api-staging.andela.com/logout?redirect_url='
@@ -181,7 +182,7 @@ EOF
 }
 start_bugsnag(){
 pushd /home/vof/app
-rails generate bugsnag a87c40387545acb74409037660a540aa
+rails generate bugsnag ${BUGSNAG_KEY}
 popd
 }
 # this right here restarts the google fluentd service so that the above changes can take effect.
