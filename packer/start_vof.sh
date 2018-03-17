@@ -182,9 +182,8 @@ configure_log_reader_positioning(){
 EOF
 }
 start_bugsnag(){
-pushd /home/vof/app
-rails generate bugsnag ${BUGSNAG_KEY} -f
-popd
+ local app_root="/home/vof/app"
+sudo -u vof bash -c " cd ${app_root} && rails generate bugsnag ${BUGSNAG_KEY} -f"
 }
 # this right here restarts the google fluentd service so that the above changes can take effect.
 restart_google_fuentd(){
