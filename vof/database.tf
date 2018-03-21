@@ -20,6 +20,7 @@ resource "google_sql_database_instance" "vof-database-instance" {
     tier = "${var.db_instance_tier}"
     availability_type = "REGIONAL"
     disk_autoresize = true
+      replication = true
     ip_configuration = {
       ipv4_enabled = true
   
@@ -32,7 +33,6 @@ resource "google_sql_database_instance" "vof-database-instance" {
     backup_configuration {
       binary_log_enabled = true
       enabled = true
-      replication = true
       start_time = "${var.db_backup_start_time}"
     }
   }
