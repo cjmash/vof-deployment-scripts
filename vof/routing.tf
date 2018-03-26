@@ -17,7 +17,7 @@ resource "google_compute_global_forwarding_rule" "vof-https" {
   name       = "${var.env_name}-vof-https"
   ip_address = "${var.reserved_env_ip}"
   target     = "${google_compute_target_https_proxy.vof-https-proxy.self_link}"
-  port_range = "443"
+  port_range = "8080"
 }
 
 resource "google_compute_ssl_certificate" "vof-ssl-certificate" {
