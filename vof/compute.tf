@@ -23,7 +23,7 @@ resource "google_compute_instance_group_manager" "vof-app-server-group-manager" 
 
   named_port {
     name = "customhttps"
-    port = ["80", "443"]
+    port = 443
   }
 }
 
@@ -99,7 +99,7 @@ resource "google_compute_autoscaler" "vof-app-autoscaler" {
 
 resource "google_compute_https_health_check" "vof-app-healthcheck"{
   name = "${var.env_name}-vof-app-healthcheck"
-  port = 8080
+  port = 443
   request_path = "${var.request_path}"
   check_interval_sec = "${var.check_interval_sec}"
   timeout_sec = "${var.timeout_sec}"
