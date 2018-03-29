@@ -18,10 +18,11 @@ resource "google_sql_database_instance" "vof-database-instance" {
 
   settings {
     tier = "${var.db_instance_tier}"
+    availability_type = "REGIONAL"
     disk_autoresize = true
     ip_configuration = {
       ipv4_enabled = true
-
+  
       authorized_networks = [{
         name = "all"
         value = "0.0.0.0/0"
