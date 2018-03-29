@@ -159,3 +159,5 @@ variable "redis_ip" {
   type = "string"
 }
 variable "bugsnag_key" {}
+
+variable "production_bugsnag_key" {}
