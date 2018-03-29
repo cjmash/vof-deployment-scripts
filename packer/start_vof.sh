@@ -15,6 +15,7 @@ export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/ho
 export RAILS_ENV="$(get_var "railsEnv")"
 export REDIS_IP=$(get_var "redisIp")
 export BUGSNAG_KEY="$(get_var "bugsnagKey")"
+export PROD_BUGSNAG_KEY ""$(get_var "productionBugsnagKey")""
 export DEPLOY_ENV="$(get_var "railsEnv")"
 if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
  export DEPLOY_ENV="staging"
@@ -30,7 +31,7 @@ update_application_yml() {
   cat <<EOF >> /home/vof/app/config/application.yml
 ACTION_CABLE_URL: '$(get_var "cableURL")'
 REDIS_URL: 'redis://${REDIS_IP}'
-BUGSNAG_KEY: '$(get_var "bugsnagKey")' 
+BUGSNAG_KEY: '$(get_var "bugsnagKey")'
 API_URL: 'https://api-staging.andela.com/'
 LOGIN_URL: 'https://api-staging.andela.com/login?redirect_url='
 LOGOUT_URL: 'https://api-staging.andela.com/logout?redirect_url='
@@ -80,11 +81,19 @@ authenticate_service_account() {
 }
 
 get_database_dump_file() {
-  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "develop-old" ]]; then
+  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" ]]; then
     if gsutil cp gs://${BUCKET_NAME}/database-backups/vof_${RAILS_ENV}.sql /home/vof/vof_${RAILS_ENV}.sql; then
       echo "Database dump file created succesfully"
     fi
   fi
+}
+start_bugsnag(){
+ local app_root="/home/vof/app"
+ if [[ "$RAILS_ENV" == "production"  ]]; then
+ sudo -u vof bash -c " cd ${app_root} && rails generate bugsnag ${PROD_BUGSNAG_KEY} -f"
+else
+sudo -u vof bash -c " cd ${app_root} && rails generate bugsnag ${BUGSNAG_KEY} -f"
+fi
 }
 
 start_app() {
@@ -92,19 +101,18 @@ start_app() {
 
   sudo -u vof bash -c "mkdir -p /home/vof/app/log"
 
-  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" || "$RAILS_ENV" == "develop-old" ]]; then
+  if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" ]]; then
     # One time actions
     # Check if the database was already imported
     if export PGPASSWORD=$(get_var "databasePassword"); psql -h $(get_var "databaseHost") -p 5432 -U $(get_var "databaseUser") -d $(get_var "databaseName") -c 'SELECT key FROM ar_internal_metadata' 2>/dev/null | grep environment >/dev/null; then
-      sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} rails db:migrate"
-      sudo -u vof bash -c "cd ${app_root} rails db:seed"
+      sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} bundle exec rake db:migrate"
     else
       # Import database dump.
       sudo -u postgres bash -c "export PGPASSWORD=$(get_var "databasePassword"); psql -h  $(get_var "databaseHost") -p 5432 -U $(get_var "databaseUser") -d $(get_var "databaseName") < /home/vof/vof_${RAILS_ENV}.sql"
     fi
   else
-    sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} rails db:setup"
-    sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} rails db:seed"
+    sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} bundle exec rake db:setup"
+    sudo -u vof bash -c "cd ${app_root} && env RAILS_ENV=${RAILS_ENV} bundle exec rake db:seed"
   fi
   supervisorctl update && supervisorctl reload
 }
@@ -182,10 +190,7 @@ configure_log_reader_positioning(){
 /home/vof/app/log/sandbox.log  000000000000000  000000000000000
 EOF
 }
-start_bugsnag(){
- local app_root="/home/vof/app"
-sudo -u vof bash -c " cd ${app_root} && rails generate bugsnag ${BUGSNAG_KEY} -f"
-}
+
 # this right here restarts the google fluentd service so that the above changes can take effect.
 restart_google_fuentd(){
   sudo service google-fluentd restart
@@ -260,6 +265,7 @@ main() {
 
   authenticate_service_account
   get_database_dump_file
+  start_bugsnag
   start_app
   configure_google_fluentd_logging
   configure_log_reader_positioning
