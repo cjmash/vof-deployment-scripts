@@ -151,6 +151,7 @@ variable "slack_channel" {
   type = "string"
 }
 
+
 variable "cable_url" {
   type = "string"
  }
@@ -160,4 +161,4 @@ variable "redis_ip" {
 }
 variable "bugsnag_key" {}
 
-
+variable "production_bugsnag_key" {}
