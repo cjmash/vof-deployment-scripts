@@ -49,6 +49,7 @@ resource "google_compute_instance_template" "vof-app-server-template" {
   }
 
   metadata {
+    productionBugsnagKey =  "${var.production_bugsnag_key}"
     databaseUser = "${random_id.vof-db-user.b64}"
     databasePassword = "${random_id.vof-db-user-password.b64}"
     databaseHost = "${google_sql_database_instance.vof-database-instance.ip_address.0.ip_address}"
