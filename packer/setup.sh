@@ -9,7 +9,7 @@ create_vof_user() {
   fi
 }
 install_nginx() {
-sudo apt-get install nginx
+sudo apt-get install nginx -y
 
 }
 setup_vof_code() {
