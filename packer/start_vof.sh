@@ -15,7 +15,6 @@ export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/ho
 export RAILS_ENV="$(get_var "railsEnv")"
 export REDIS_IP=$(get_var "redisIp")
 export BUGSNAG_KEY="$(get_var "bugsnagKey")"
-export PROD_BUGSNAG_KEY ""$(get_var "productionBugsnagKey")""
 export DEPLOY_ENV="$(get_var "railsEnv")"
 if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
  export DEPLOY_ENV="staging"
