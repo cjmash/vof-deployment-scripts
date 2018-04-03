@@ -11,7 +11,7 @@ create_vof_user() {
 
 setup_vof_code() {
   sudo chown -R vof:vof /home/vof 
-  cd /home/vof/app && bundle install
+  cd /home/vof/app && bundle install && apt install nginx
 }
 
 start_supervisor_service() {
