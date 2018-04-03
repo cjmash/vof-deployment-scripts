@@ -8,8 +8,9 @@ create_vof_user() {
     sudo useradd -m -s /bin/bash vof
   fi
 }
-install_nginx{
+install_nginx() {
 sudo apt-get install nginx
+
 }
 setup_vof_code() {
   sudo chown -R vof:vof /home/vof 
