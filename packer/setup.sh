@@ -9,6 +9,7 @@ create_vof_user() {
   fi
 }
 install_nginx() {
+sudo rm /var/lib/apt/lists/lock
 sudo apt-get install nginx -y
 
 }
