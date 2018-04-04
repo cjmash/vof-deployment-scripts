@@ -124,8 +124,10 @@ start_app() {
 configure_nginx() {
 sudo rm -rf /etc/nginx/sites-available/default
 sudo touch  /etc/nginx/sites-available/default
+sudo cp /home/vof/sites-available /etc/nginx/sites-available/default
 sudo rm -rf /etc/nginx/nginx.conf
 sudo touch /etc/nginx/nginx.conf
+sudo cp /home/vof/nginx-conf /etc/nginx/nginx.conf
 }
 start_nginx(){
 sudo systemctl start nginx
