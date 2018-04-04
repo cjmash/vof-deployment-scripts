@@ -44,7 +44,7 @@
 		{
 			"type": "file",
 			"source": "nginx.conf",
-      "destination": "/home/vof/nginx-conf"
+      "destination": "/home/vof/nginx.conf"
 		},
 		{
 			"type": "file",
