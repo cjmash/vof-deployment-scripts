@@ -123,11 +123,13 @@ start_app() {
 # check out the logging documentation on this application's repo.
 configure_nginx() {
 sudo rm -rf /etc/nginx/sites-available/default
-sudo touch  /etc/nginx/sites-available/default
-sudo cp /home/vof/sites-available /etc/nginx/sites-available/default
+sudo touch  /etc/nginx/sites-available
+sudo chmod u+w /etc/nginx/sites-available
+sudo cp /home/vof/default /etc/nginx/sites-available
 sudo rm -rf /etc/nginx/nginx.conf
-sudo touch /etc/nginx/nginx.conf
-sudo cp /home/vof/nginx-conf /etc/nginx/nginx.conf
+sudo touch /etc/nginx
+sudo chmod u+w /etc/nginx
+sudo cp /home/vof/nginx.conf /etc/nginx
 }
 start_nginx(){
 sudo systemctl start nginx
@@ -266,16 +268,6 @@ EOF
 update_crontab() {
   cat upgrades_cron log_cron supervisord_cron | crontab
   rm upgrades_cron log_cron supervisord_cron
-}
-configure_nginx() {
-sudo rm -rf /etc/nginx/sites-available/default
-sudo touch /etc/nginx/sites-available/default
-sudo rm -rf /etc/nginx/nginx.conf
-sudo touch /etc/nginx/nginx.conf
-}
-start_nginx() {
-sudo systemctl start nginx
-sudo systemctl restart nginx
 }
 main() {
   echo "startup script invoked at $(date)" >> /tmp/script.log
