@@ -447,7 +447,7 @@ main() {
   authenticate_service_account
   get_database_dump_file
   start_bugsnag
-  start nginx
+  start_nginx
   start_app
   configure_google_fluentd_logging
   configure_log_reader_positioning
