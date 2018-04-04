@@ -25,6 +25,8 @@ sudo echo "export SLACK_WEBHOOK=$(get_var "slackWebhook")" >> /home/vof/.env_set
 sudo echo "export SLACK_CHANNEL=$(get_var "slackChannel")" >> /home/vof/.env_setup_rc
 gsutil cp gs://${BUCKET_NAME}/ssl/andela_key.key /home/vof/andela_key.key
 gsutil cp gs://${BUCKET_NAME}/ssl/andela_certificate.crt /home/vof/andela_certificate.crt
+gsutil cp gs://${BUCKET_NAME}/ssl/andela_key.key /etc/nginx/andela_key.key
+gsutil cp gs://${BUCKET_NAME}/ssl/andela_certificate.crt /etc/nginx/andela_certificate.crt
 
 update_application_yml() {
   cat <<EOF >> /home/vof/app/config/application.yml
