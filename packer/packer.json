@@ -43,13 +43,13 @@
 		},
 		{
 			"type": "file",
-			"source": "nginx-conf",
+			"source": "nginx.conf",
       "destination": "/home/vof/nginx-conf"
 		},
 		{
 			"type": "file",
-			"source": "sites-available",
-      "destination": "/home/vof/sites-available"
+			"source": "default",
+      "destination": "/home/vof/default"
 		},
 		{
 			"type": "file",
