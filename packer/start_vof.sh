@@ -63,7 +63,7 @@ create_log_files() {
 create_vof_supervisord_conf() {
   sudo cat <<EOF > /etc/supervisor/conf.d/vof.conf
 [program:vof]
-command=/usr/bin/env RAILS_ENV=${DEPLOY_ENV} PORT=${PORT} RAILS_SERVE_STATIC_FILES=true /usr/bin/nohup /usr/local/bin/bundle exec puma -b ${SSL_CONFIG_PATH} -C config/puma.rb
+command=/usr/bin/env RAILS_ENV=${DEPLOY_ENV} PORT=${PORT} RAILS_SERVE_STATIC_FILES=true /usr/bin/nohup /usr/local/bin/bundle exec puma -b ${SSL_CONFIG_PATH} -b unix:///var/run/puma.sock -C config/puma.rb
 directory=/home/vof/app
 autostart=true
 autorestart=true
@@ -119,6 +119,90 @@ start_app() {
 # this configures the application logging by google-fluentd to send application logs to
 # the google logging web UI just like all other logs like syslog and VM logs. For indepth explanation on how this is done and why everything is where it is
 # check out the logging documentation on this application's repo.
+configure_nginx() {
+sudo rm -rf /etc/nginx/sites-available/default
+sudo touch  /etc/nginx/sites-available/default
+sudo cat <<EOF >> /etc/nginx/sites-available/default
+upstream puma{
+    server unix:///tmp/my_app.sock;
+}
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        large_client_header_buffers 4 32k;
+        server_name vof-devops-staging.andela.com;
+        # SSL configuration
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+         ssl on;
+         ssl_certificate /etc/nginx/andela_certificate.crt;
+         ssl_certificate_key /etc/nginx/andela_key.key;
+        ssl_session_cache  builtin:1000  shared:SSL:10m;
+        ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+       ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+       ssl_prefer_server_ciphers on;
+        root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+try_files $uri/index.html $uri @puma;
+        location @puma {        proxy_set_header  Host $host;
+     proxy_set_header        X-Real-IP $remote_addr;
+     proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+     proxy_set_header        X-Forwarded-Proto $scheme;
+     proxy_pass http://puma;
+     proxy_read_timeout  90;
+     proxy_redirect      off;
+EOF
+sudo rm -rf /etc/nginx/nginx.conf
+sudo touch /etc/nginx/nginx.conf
+sudo cat <<EOF >> /etc/nginx/nginx.conf
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+events {
+        worker_connections 768;
+        # multi_accept on;
+}
+http {
+        ##
+        # Basic Settings
+        ##
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        # server_tokens off;
+        # server_names_hash_bucket_size 64;
+        # server_name_in_redirect off;
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        ##
+        # SSL Settings
+        ##
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+        ssl_prefer_server_ciphers on;
+    
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log;
+        # Gzip Settings
+        gzip on;
+        gzip_disable "msie6";
+         gzip_vary on;
+         gzip_proxied any;
+         gzip_comp_level 6;
+         gzip_buffers 16 8k;
+         gzip_http_version 1.1;
+         gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        include /etc/nginx/conf.d/*.conf;
+        include /etc/nginx/sites-enabled/*;
+}
+EOF
+}
+start_nginx(){
+sudo systemctl start nginx
+sudo systemctl restart nginx
+
+}
 configure_google_fluentd_logging() {
 
   sudo cat <<EOF > /etc/google-fluentd/config.d/vof_development_logs.conf
