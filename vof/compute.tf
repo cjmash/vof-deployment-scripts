@@ -23,7 +23,11 @@ resource "google_compute_instance_group_manager" "vof-app-server-group-manager" 
 
   named_port {
     name = "customhttps"
-    port = 8080
+    port = 80
+  }
+  named_port {
+    name = "customhttps"
+    port = 443
   }
 }
 
