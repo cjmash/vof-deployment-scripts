@@ -3,13 +3,15 @@
 set -e
 set -o pipefail
 
+ sudo rm /var/lib/dpkg/lock
+ 
 create_vof_user() {
   if ! id -u vof; then
     sudo useradd -m -s /bin/bash vof
   fi
 }
 install_nginx() {
-sudo rm /var/lib/apt/lists/lock
+
 sudo apt-get install nginx -y
 
 }
