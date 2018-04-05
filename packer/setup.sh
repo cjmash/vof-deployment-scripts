@@ -11,7 +11,7 @@ create_vof_user() {
   fi
 }
 install_nginx() {
-
+sudo apt-get update
 sudo apt-get install nginx -y
 
 }
