@@ -2,8 +2,6 @@
 
 set -e
 set -o pipefail
-
- sudo rm /var/lib/dpkg/lock
  
 create_vof_user() {
   if ! id -u vof; then
