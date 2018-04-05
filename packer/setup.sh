@@ -2,13 +2,18 @@
 
 set -e
 set -o pipefail
- 
+
+#sudo rm /var/cache/apt/archives/lock
+#sudo rm /var/lib/dpkg/lock
+
 create_vof_user() {
+echo "creating users"
   if ! id -u vof; then
     sudo useradd -m -s /bin/bash vof
   fi
 }
 install_nginx() {
+echo "installing nginx"
 sudo apt-get update
 sudo apt-get install nginx -y
 
