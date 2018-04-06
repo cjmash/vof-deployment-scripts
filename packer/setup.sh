@@ -12,11 +12,14 @@ echo "creating users"
     sudo useradd -m -s /bin/bash vof
   fi
 }
-
+install_nginx() {
+sudo chown -R vof:vof /home/vof 
+cd /home/vof/app && sudo apt-get install nginx -y
+}
 setup_vof_code() {
 echo " setting up code"
   sudo chown -R vof:vof /home/vof 
-  cd /home/vof/app && bundle install && sudo apt-get install nginx -y
+  cd /home/vof/app && bundle install 
 }
 
 start_supervisor_service() {
