@@ -3,8 +3,8 @@
 set -e
 set -o pipefail
 
-#sudo rm /var/cache/apt/archives/lock
-#sudo rm /var/lib/dpkg/lock
+# sudo rm /var/cache/apt/archives/lock
+# sudo rm /var/lib/dpkg/lock
 
 create_vof_user() {
 echo "creating users"
@@ -12,17 +12,11 @@ echo "creating users"
     sudo useradd -m -s /bin/bash vof
   fi
 }
-install_nginx() {
-echo "installing nginx"
-sudo rm /var/cache/apt/archives/lock
-sudo rm /var/lib/dpkg/lock
-sudo apt-get update
-sudo apt-get install nginx -y
 
-}
 setup_vof_code() {
+echo " setting up code"
   sudo chown -R vof:vof /home/vof 
-  cd /home/vof/app && bundle install 
+  cd /home/vof/app && bundle install && sudo apt-get install nginx -y
 }
 
 start_supervisor_service() {
@@ -31,7 +25,6 @@ start_supervisor_service() {
 
 main() {
   create_vof_user
-  install_nginx
   setup_vof_code
   start_supervisor_service
 }
