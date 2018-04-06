@@ -28,6 +28,7 @@ start_supervisor_service() {
 
 main() {
   create_vof_user
+  install_nginx
   setup_vof_code
   start_supervisor_service
 }
