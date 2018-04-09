@@ -36,6 +36,7 @@ BUGSNAG_KEY: '$(get_var "bugsnagKey")'
 API_URL: 'https://api-staging.andela.com/'
 LOGIN_URL: 'https://api-staging.andela.com/login?redirect_url='
 LOGOUT_URL: 'https://api-staging.andela.com/logout?redirect_url='
+DB_NAME: '$(get_var "databaseInstanceName")'
 POSTGRES_USER: '$(get_var "databaseUser")'
 POSTGRES_PASSWORD: '$(get_var "databasePassword")'
 POSTGRES_HOST: '$(get_var "databaseHost")'
@@ -79,6 +80,11 @@ authenticate_service_account() {
   if gcloud auth activate-service-account --key-file=/home/vof/account.json; then
     echo "Service account authentication successful"
   fi
+}
+authorize_external_ips() {
+
+CURRENTIP="$(curl ifconfig.co)"
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIP,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
 }
 
 get_database_dump_file() {
@@ -278,6 +284,7 @@ main() {
   create_vof_supervisord_conf
   configure_nginx
   authenticate_service_account
+  authorize_external_ips
   get_database_dump_file
   start_bugsnag
   start_nginx
