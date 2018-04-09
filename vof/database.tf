@@ -47,11 +47,7 @@ resource "google_sql_database_instance" "vof-database-instance" {
         name = "Latent View 2"
         value = "182.74.31.70"
       }
-      authorized_networks  {
-        name = "staging env"
-        value = "35.190.62.2"
-      }
-    
+  
     }
 
     backup_configuration {
