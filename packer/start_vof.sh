@@ -82,11 +82,10 @@ authenticate_service_account() {
   fi
 }
 authorize_external_ips() {
-
-CURRENTIP="$(curl ifconfig.co)"
-gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIP,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
+CURRENTIPS="$(gcloud compute instances list --project andela-learning | grep staging-vof-app-instance | awk -v ORS=, '{if ($5) print $5}' | sed 's/,$//')"
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.1
+40.245.142,182.74.31.70
 }
-
 get_database_dump_file() {
   if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" ]]; then
     if gsutil cp gs://${BUCKET_NAME}/database-backups/vof_${RAILS_ENV}.sql /home/vof/vof_${RAILS_ENV}.sql; then
