@@ -161,4 +161,3 @@ variable "redis_ip" {
 }
 variable "bugsnag_key" {}
 
-variable "production_bugsnag_key" {}

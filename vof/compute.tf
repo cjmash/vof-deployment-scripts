@@ -23,7 +23,11 @@ resource "google_compute_instance_group_manager" "vof-app-server-group-manager" 
 
   named_port {
     name = "customhttps"
-    port = 8080
+    port = 80
+  }
+  named_port {
+    name = "customhttps"
+    port = 443
   }
 }
 
@@ -50,10 +54,10 @@ resource "google_compute_instance_template" "vof-app-server-template" {
   }
 
   metadata {
-    productionBugsnagKey =  "${var.production_bugsnag_key}"
     bugsnagKey= "${var.bugsnag_key}"
     cableURL = "${var.cable_url}"
     databaseUser = "${random_id.vof-db-user.b64}"
+    databaseInstanceName = "${var.env_name}-vof-database-instance-${replace(lower(random_id.db-name.b64), "_", "-")}"
     databasePassword = "${random_id.vof-db-user-password.b64}"
     databaseHost = "${google_sql_database_instance.vof-database-instance.ip_address.0.ip_address}"
     databasePort = "5432"

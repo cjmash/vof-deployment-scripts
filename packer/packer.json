@@ -43,6 +43,16 @@
 		},
 		{
 			"type": "file",
+			"source": "nginx.conf",
+      "destination": "/home/vof/nginx.conf"
+		},
+		{
+			"type": "file",
+			"source": "default",
+      "destination": "/home/vof/default"
+		},
+		{
+			"type": "file",
 			"source": "{{ user `service_account_json`}}",
             "destination": "/home/vof/account.json"
 		}

@@ -15,7 +15,6 @@ export SSL_CONFIG_PATH="ssl://0.0.0.0:8080?key=/home/vof/andela_key.key&cert=/ho
 export RAILS_ENV="$(get_var "railsEnv")"
 export REDIS_IP=$(get_var "redisIp")
 export BUGSNAG_KEY="$(get_var "bugsnagKey")"
-export PROD_BUGSNAG_KEY ""$(get_var "productionBugsnagKey")""
 export DEPLOY_ENV="$(get_var "railsEnv")"
 if [[ "$(get_var "railsEnv")" == "design-v2" ]]; then
  export DEPLOY_ENV="staging"
@@ -26,6 +25,8 @@ sudo echo "export SLACK_WEBHOOK=$(get_var "slackWebhook")" >> /home/vof/.env_set
 sudo echo "export SLACK_CHANNEL=$(get_var "slackChannel")" >> /home/vof/.env_setup_rc
 gsutil cp gs://${BUCKET_NAME}/ssl/andela_key.key /home/vof/andela_key.key
 gsutil cp gs://${BUCKET_NAME}/ssl/andela_certificate.crt /home/vof/andela_certificate.crt
+gsutil cp gs://${BUCKET_NAME}/ssl/andela_key.key /etc/nginx/andela_key.key
+gsutil cp gs://${BUCKET_NAME}/ssl/andela_certificate.crt /etc/nginx/andela_certificate.crt
 
 update_application_yml() {
   cat <<EOF >> /home/vof/app/config/application.yml
@@ -35,6 +36,7 @@ BUGSNAG_KEY: '$(get_var "bugsnagKey")'
 API_URL: 'https://api-staging.andela.com/'
 LOGIN_URL: 'https://api-staging.andela.com/login?redirect_url='
 LOGOUT_URL: 'https://api-staging.andela.com/logout?redirect_url='
+DB_NAME: '$(get_var "databaseInstanceName")'
 POSTGRES_USER: '$(get_var "databaseUser")'
 POSTGRES_PASSWORD: '$(get_var "databasePassword")'
 POSTGRES_HOST: '$(get_var "databaseHost")'
@@ -64,7 +66,7 @@ create_log_files() {
 create_vof_supervisord_conf() {
   sudo cat <<EOF > /etc/supervisor/conf.d/vof.conf
 [program:vof]
-command=/usr/bin/env RAILS_ENV=${DEPLOY_ENV} PORT=${PORT} RAILS_SERVE_STATIC_FILES=true /usr/bin/nohup /usr/local/bin/bundle exec puma -b ${SSL_CONFIG_PATH} -C config/puma.rb
+command=/usr/bin/env RAILS_ENV=${DEPLOY_ENV} PORT=${PORT} RAILS_SERVE_STATIC_FILES=true /usr/bin/nohup /usr/local/bin/bundle exec puma -b ${SSL_CONFIG_PATH} -b unix:///tmp/my_app.sock -C config/puma.rb
 directory=/home/vof/app
 autostart=true
 autorestart=true
@@ -79,7 +81,20 @@ authenticate_service_account() {
     echo "Service account authentication successful"
   fi
 }
-
+authorize_external_ips() {
+if [[ "$RAILS_ENV" == "staging" ]] ; then 
+CURRENTIPS="$(gcloud compute instances list --project andela-learning | grep staging-vof-app-instance | awk -v ORS=, '{if ($5) print $5}' | sed 's/,$//')"
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
+fi
+if [[ "$RAILS_ENV" == "production" ]] ; then 
+CURRENTIPS="$(gcloud compute instances list --project andela-learning | grep production-vof-app-instance | awk -v ORS=, '{if ($5) print $5}' | sed 's/,$//')"
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
+fi
+if [[ "$RAILS_ENV" == "sandbox" ]] ; then 
+CURRENTIPS="$(gcloud compute instances list --project andela-learning | grep sandbox-vof-app-instance | awk -v ORS=, '{if ($5) print $5}' | sed 's/,$//')"
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
+fi
+}
 get_database_dump_file() {
   if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" ]]; then
     if gsutil cp gs://${BUCKET_NAME}/database-backups/vof_${RAILS_ENV}.sql /home/vof/vof_${RAILS_ENV}.sql; then
@@ -120,6 +135,21 @@ start_app() {
 # this configures the application logging by google-fluentd to send application logs to
 # the google logging web UI just like all other logs like syslog and VM logs. For indepth explanation on how this is done and why everything is where it is
 # check out the logging documentation on this application's repo.
+configure_nginx() {
+sudo rm -rf /etc/nginx/sites-available/default
+sudo touch  /etc/nginx/sites-available
+sudo chmod u+w /etc/nginx/sites-available
+sudo cp /home/vof/default /etc/nginx/sites-available
+sudo rm -rf /etc/nginx/nginx.conf
+sudo touch /etc/nginx
+sudo chmod u+w /etc/nginx
+sudo cp /home/vof/nginx.conf /etc/nginx
+}
+start_nginx(){
+sudo systemctl start nginx
+sudo systemctl restart nginx
+
+}
 configure_google_fluentd_logging() {
 
   sudo cat <<EOF > /etc/google-fluentd/config.d/vof_development_logs.conf
@@ -253,8 +283,6 @@ update_crontab() {
   cat upgrades_cron log_cron supervisord_cron | crontab
   rm upgrades_cron log_cron supervisord_cron
 }
-
-
 main() {
   echo "startup script invoked at $(date)" >> /tmp/script.log
 
@@ -262,10 +290,12 @@ main() {
   update_application_yml
   create_secrets_yml
   create_vof_supervisord_conf
-
+  configure_nginx
   authenticate_service_account
+  authorize_external_ips
   get_database_dump_file
   start_bugsnag
+  start_nginx
   start_app
   configure_google_fluentd_logging
   configure_log_reader_positioning

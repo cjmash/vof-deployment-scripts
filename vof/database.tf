@@ -23,10 +23,31 @@ resource "google_sql_database_instance" "vof-database-instance" {
     ip_configuration = {
       ipv4_enabled = true
   
-      authorized_networks = [{
-        name = "all"
-        value = "0.0.0.0/0"
-      }]
+      authorized_networks  {
+        name = "lagos 1"
+        value = "41.75.89.154"
+      }
+      authorized_networks  {
+        name = "lagos 2"
+        value = "41.215.245.162"
+      }
+      authorized_networks  {
+        name = "Nairobi"
+        value = "105.21.32.62"
+      }
+      authorized_networks  {
+        name = "home"
+        value = "108.41.204.165"
+      }
+      authorized_networks  {
+        name = "Latent View 1"
+        value = "14.140.245.142"
+      }
+      authorized_networks  {
+        name = "Latent View 2"
+        value = "182.74.31.70"
+      }
+  
     }
 
     backup_configuration {
