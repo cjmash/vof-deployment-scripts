@@ -4,7 +4,6 @@ resource "google_compute_backend_service" "web" {
   port_name = "customhttps"
   protocol = "HTTPS"
   enable_cdn = false
-
   backend {
     group = "${google_compute_instance_group_manager.vof-app-server-group-manager.instance_group}"
   }
