@@ -83,8 +83,7 @@ authenticate_service_account() {
 }
 authorize_external_ips() {
 CURRENTIPS="$(gcloud compute instances list --project andela-learning | grep staging-vof-app-instance | awk -v ORS=, '{if ($5) print $5}' | sed 's/,$//')"
-gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.1
-40.245.142,182.74.31.70
+gcloud sql instances patch $(get_var "databaseInstanceName") --quiet --authorized-networks=$CURRENTIPS,41.75.89.154,41.215.245.162,41.215.245.162,108.41.204.165,14.140.245.142,182.74.31.70
 }
 get_database_dump_file() {
   if [[ "$RAILS_ENV" == "production" || "$RAILS_ENV" == "staging" || "$RAILS_ENV" == "sandbox" ]]; then
